@@ -23,7 +23,7 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
-   async redirects() {
+  async redirects() {
     return [
       // Redirect www to non-www (or vice versa)
       {
