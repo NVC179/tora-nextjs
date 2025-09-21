@@ -8,7 +8,6 @@ import FeaturedItemCard from './FeaturedItemCard';
 
 
 const FeaturedSection: React.FC<FeaturedSectionProps> = ({ 
-  otherProjects,
   className = "" 
 }) => {
   const { title, items } = featuredData;

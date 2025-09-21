@@ -17,6 +17,7 @@ export interface ProjectDetail {
   location: string;
   images: ProjectImage[];
   backgroundImage?: string;
+  slug?: string;
 }
 
 export interface ProjectDetailPageProps {

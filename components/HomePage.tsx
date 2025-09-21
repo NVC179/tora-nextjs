@@ -26,7 +26,6 @@ export default function HomePage() {
 
       <div className="pt-[80vh]">
         <FeaturedSection 
-          otherProjects={otherProjects} 
           className="mb-16" 
         />
         {/* Other homepage sections */}

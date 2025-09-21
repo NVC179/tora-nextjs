@@ -1,3 +1,5 @@
+import { ProjectDetail } from "./project";
+
 export interface FeaturedItem {
   id: number;
   slug: string;
