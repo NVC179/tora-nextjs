@@ -11,9 +11,9 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: '**.torastudio.com',
+        hostname: 'www.torastudio.com',
         port: '',
-        pathname: '/**',
+        pathname: '/wp-content/uploads/**',
       },
     ],
   },
@@ -22,6 +22,17 @@ const nextConfig = {
   },
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
+  },
+   async redirects() {
+    return [
+      // Redirect www to non-www (or vice versa)
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'www.torastudio.vn' }],
+        destination: 'https://torastudio.vn/:path*',
+        permanent: true,
+      },
+    ];
   },
 }
 
