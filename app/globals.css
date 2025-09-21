@@ -1,0 +1,225 @@
+:root {
+  /* Các biến CSS theo bạn gửi */
+  --wp--preset--font-size--normal: 16px;
+  --wp--preset--font-size--huge: 42px;
+  --wp--preset--font-size--small: 13px;
+  --wp--preset--font-size--medium: 20px;
+  --wp--preset--font-size--large: 36px;
+  --wp--preset--font-size--x-large: 42px;
+  --wp--preset--color--white: #fff
+  --bs-body-font-family: 'Noto Sans', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Các biến màu sắc, shadows... bạn đã liệt kê, có thể thêm ở đây. */
+}
+
+/* Import Tailwind */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global body styles */
+body {
+  margin: 0;
+  font-size: var(--wp--preset--font-size--normal);
+  font-family: var(--bs-body-font-family);
+  font-weight: 400;
+  line-height: 1.5;
+  background-color: #fff;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  box-sizing: border-box;
+  transition: color 0.3s ease-in-out;
+}
+
+.home_header {
+  position: relative;
+  background-size: cover;
+  background-position: center;
+}
+
+.home_header_hover {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.lightbox-overlay {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Smooth image transitions */
+.gallery-image {
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gallery-image:hover {
+  transform: scale(1.05);
+}
+
+/* Custom scrollbar for project content */
+.prose::-webkit-scrollbar {
+  width: 6px;
+}
+
+.prose::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.prose::-webkit-scrollbar-thumb {
+  background: #ea580c;
+  border-radius: 3px;
+}
+
+/* globals.css */
+.creative-field-area {
+  padding: 2rem 1.5rem;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.creative-field-area:hover {
+  transform: translateY(-3px);
+  background-color: rgba(249, 250, 251, 0.5);
+  border-radius: 8px;
+}
+
+/* Decorative underline for titles */
+.creative-field-title {
+  position: relative;
+  display: inline-block;
+}
+
+.creative-field-title::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 3px;
+  background: linear-gradient(90deg, #ea580c, #f97316);
+  border-radius: 2px;
+  opacity: 0;
+  transition: all 0.4s ease;
+}
+
+.creative-field-area:hover .creative-field-title::after {
+  opacity: 1;
+  width: 60px;
+}
+
+/* Mobile separator lines */
+@media (max-width: 768px) {
+  .creative-field-area:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 1px;
+    background-color: #e5e7eb;
+  }
+}
+
+/* Enhanced border styles */
+.project-details-section {
+  position: relative;
+}
+
+.project-details-section::before,
+.project-details-section::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #ea580c, transparent);
+}
+
+.project-details-section::before {
+  top: 0;
+}
+
+.project-details-section::after {
+  bottom: 0;
+}
+
+/* globals.css */
+.creative-field-area {
+  padding: 2rem 1.5rem;
+  transition: all 0.3s ease;
+  position: relative;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.creative-field-area:hover {
+  transform: translateY(-2px);
+  background-color: rgba(249, 250, 251, 0.8);
+}
+
+/* Ensure equal distribution */
+@media (min-width: 768px) {
+  .creative-field-area {
+    flex: 1;
+    max-width: none;
+  }
+}
+
+/* Enhanced border styling */
+.creative-field-area::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 60%;
+  background: linear-gradient(to bottom, transparent, #e5e7eb, transparent);
+}
+
+.creative-field-area:last-child::before {
+  display: none;
+}
+
+/* Mobile stacking */
+@media (max-width: 767px) {
+  .creative-field-area::before {
+    top: auto;
+    bottom: 0;
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #e5e7eb, transparent);
+  }
+  
+  .creative-field-area:last-child::before {
+    display: none;
+  }
+}
+
+
+
+
