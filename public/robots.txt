@@ -1,4 +1,9 @@
-# public/robots.txt
+# *
 User-agent: *
 Allow: /
+
+# Host
+Host: https://torastudio.vn
+
+# Sitemaps
 Sitemap: https://torastudio.vn/sitemap.xml

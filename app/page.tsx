@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { projectsData } from '../data/projects'
 import { Project } from '../types'
 import ProjectDetail from '../components/ProjectDetail'
@@ -10,8 +10,71 @@ export default function Home() {
   const [currentSection, setCurrentSection] = useState<string>('')
   const [selectedCategory, setSelectedCategory] = useState('')
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
-  const [mobileNavOpen, setMobileNavOpen] = useState(false) // Thay vì mobileMenuOpen
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
+  // Swipe gesture states
+  const [touchStart, setTouchStart] = useState<number | null>(null)
+  const [touchEnd, setTouchEnd] = useState<number | null>(null)
+
+  // Check first visit và auto-open nav trên mobile
+  useEffect(() => {
+    const isFirstVisit = !sessionStorage.getItem('hasVisited')
+    const isMobile = window.innerWidth <= 768
+    
+    if (isFirstVisit && isMobile) {
+      setMobileNavOpen(true)
+      sessionStorage.setItem('hasVisited', 'true')
+    }
+  }, [])
+
+  // Minimum swipe distance (in px)
+  const minSwipeDistance = 50
+
+  const onTouchStart = (e: TouchEvent) => {
+    setTouchEnd(null)
+    setTouchStart(e.targetTouches[0].clientX)
+  }
+
+  const onTouchMove = (e: TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX)
+  }
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return
+    
+    const distance = touchStart - touchEnd
+    const isLeftSwipe = distance > minSwipeDistance
+    const isRightSwipe = distance < -minSwipeDistance
+
+    // Nếu đang ở ProjectDetail - vuốt từ trái sang phải để back
+    if (selectedProject && isRightSwipe) {
+      setSelectedProject(null)
+    }
+    // Nếu không ở ProjectDetail - vuốt từ trái sang phải -> mở nav
+    else if (!selectedProject && isRightSwipe && !mobileNavOpen) {
+      setMobileNavOpen(true)
+    }
+    // Vuốt từ phải sang trái -> đóng nav
+    else if (isLeftSwipe && mobileNavOpen) {
+      setMobileNavOpen(false)
+    }
+  }
+
+  useEffect(() => {
+    const handleTouchStart = (e: TouchEvent) => onTouchStart(e)
+    const handleTouchMove = (e: TouchEvent) => onTouchMove(e)
+    const handleTouchEnd = () => onTouchEnd()
+
+    document.addEventListener('touchstart', handleTouchStart)
+    document.addEventListener('touchmove', handleTouchMove)
+    document.addEventListener('touchend', handleTouchEnd)
+
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart)
+      document.removeEventListener('touchmove', handleTouchMove)
+      document.removeEventListener('touchend', handleTouchEnd)
+    }
+  }, [touchStart, touchEnd, mobileNavOpen, selectedProject])
 
   const handleSectionClick = (section: string) => {
     setCurrentSection(section)
@@ -62,7 +125,7 @@ export default function Home() {
           <h2>tôra studio</h2>
         </a>
         <div className="mobile-nav-toggle" onClick={toggleMobileNav}>
-          {mobileNavOpen ? '×' : ''}
+          {mobileNavOpen ? '×' : '☰'}
         </div>
       </div>
 
@@ -83,7 +146,6 @@ export default function Home() {
           <li><h2 onClick={() => handleSectionClick('studio')}>studio</h2></li>
         </ul>
       </div>
-
 
       {/* Menu Block */}
       <div className="menublock">
@@ -116,19 +178,6 @@ export default function Home() {
                   <h2>
                     {currentSection}
                   </h2>
-                  {/* 
-                  <div className="categories">
-                    <ul>
-                      <li><a onClick={() => setSelectedCategory('')}>All</a></li>
-                      {categories[currentSection as keyof typeof categories]?.map((category) => (
-                        <li key={category}>
-                          <a onClick={() => setSelectedCategory(category)}>
-                            {category}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div> */}
                 </>
               )}
             </div>
@@ -145,7 +194,15 @@ export default function Home() {
           // Hiển thị danh sách projects
           <div>
             {getFilteredData().map((item) => (
-              <div key={item.id} className="project-item" onClick={() => handleProjectClick(item)}>
+              <div key={item.id} className="project-item" onClick={() => {
+                if (item.externalLink) {
+                  // Chuyển hướng trang mới
+                  window.open(item.externalLink, '_blank');
+                } else {
+                  // Mở chi tiết project
+                  handleProjectClick(item);
+                }
+              }}>
                 {currentSection === 'studio' ? (
                   // Layout đặc biệt cho studio - chỉ ảnh to và thông tin bên dưới
                   <div className="studio-layout">
@@ -159,6 +216,10 @@ export default function Home() {
                       <div className="studio-address-item">
                         <p>
                           23C Tông Đản, Hoàn Kiếm, Hà Nội
+                        </p>
+                        <br />
+                        <p>
+                          email: torastudiovn@gmail.com
                         </p>
                       </div>
 
@@ -190,7 +251,18 @@ export default function Home() {
                       <div className="chunk">
                         <h2>{item.title}</h2>
                         <div className="meta-data">
-                          <p>{item.location}<br />{item.period}</p>
+                          {item.location && item.period ? (
+                            <p>
+                              {item.location}
+                              <br />
+                              {item.period}
+                            </p>
+                          ) : item.shortDescription ? (
+                            <p>{item.shortDescription}
+                              <br />
+                              ...đọc tiếp
+                            </p>
+                          ) : null}
                         </div>
                       </div>
                     </div>
@@ -203,7 +275,6 @@ export default function Home() {
                 )}
               </div>
             ))}
-
           </div>
         )}
       </div>

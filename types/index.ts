@@ -1,12 +1,21 @@
+export interface ProductInfo {
+  size: string;
+  material: string;
+  price: string;
+}
+
 export interface Project {
   id: number
   title: string
-  location: string
-  period: string
+  location?: string | undefined
+  period?: string | undefined
   image: string
-  category: string
-  description: string
-  gallery: string[]
+  category?: string
+  description?: string
+  gallery?: string[]
+  shortDescription?: string | undefined
+  externalLink?: string | undefined
+  productInfo?: ProductInfo;
 }
 
 export interface ProjectsData {
