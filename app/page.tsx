@@ -16,11 +16,21 @@ export default function Home() {
   const [touchStart, setTouchStart] = useState<number | null>(null)
   const [touchEnd, setTouchEnd] = useState<number | null>(null)
 
+  useEffect(() => {
+    document.body.style.overscrollBehaviorX = 'none'
+    document.documentElement.style.overscrollBehaviorX = 'none'
+
+    return () => {
+      document.body.style.overscrollBehaviorX = ''
+      document.documentElement.style.overscrollBehaviorX = ''
+    }
+  }, [])
+
   // Check first visit và auto-open nav trên mobile
   useEffect(() => {
     const isFirstVisit = !sessionStorage.getItem('hasVisited')
     const isMobile = window.innerWidth <= 768
-    
+
     if (isFirstVisit && isMobile) {
       setMobileNavOpen(true)
       sessionStorage.setItem('hasVisited', 'true')
@@ -28,11 +38,29 @@ export default function Home() {
   }, [])
 
   // Minimum swipe distance (in px)
+
+  const EDGE_THRESHOLD = 30
   const minSwipeDistance = 50
 
   const onTouchStart = (e: TouchEvent) => {
+    const touchX = e.targetTouches[0].clientX
+
     setTouchEnd(null)
-    setTouchStart(e.targetTouches[0].clientX)
+
+    // Kiểm tra edge swipe
+    if (touchX < EDGE_THRESHOLD) {
+      if (selectedProject) {
+        // Ở ProjectDetail: ngăn browser back, xử lý custom swipe
+        e.preventDefault()
+        setTouchStart(touchX)
+      } else {
+        // Không ở ProjectDetail: không xử lý, để browser back tự nhiên
+        setTouchStart(null)
+        return
+      }
+    } else {
+      setTouchStart(touchX)
+    }
   }
 
   const onTouchMove = (e: TouchEvent) => {
@@ -41,7 +69,7 @@ export default function Home() {
 
   const onTouchEnd = () => {
     if (!touchStart || !touchEnd) return
-    
+
     const distance = touchStart - touchEnd
     const isLeftSwipe = distance > minSwipeDistance
     const isRightSwipe = distance < -minSwipeDistance
