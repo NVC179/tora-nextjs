@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { projectsData } from '../data/projects'
 import { Project } from '../types'
 import ProjectDetail from '../components/ProjectDetail'
@@ -10,99 +10,18 @@ export default function Home() {
   const [currentSection, setCurrentSection] = useState<string>('')
   const [selectedCategory, setSelectedCategory] = useState('')
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
-  const [mobileNavOpen, setMobileNavOpen] = useState(false)
-
-  // Swipe gesture states
-  const [touchStart, setTouchStart] = useState<number | null>(null)
-  const [touchEnd, setTouchEnd] = useState<number | null>(null)
-
-  useEffect(() => {
-    document.body.style.overscrollBehaviorX = 'none'
-    document.documentElement.style.overscrollBehaviorX = 'none'
-
-    return () => {
-      document.body.style.overscrollBehaviorX = ''
-      document.documentElement.style.overscrollBehaviorX = ''
-    }
-  }, [])
+  const [mobileNavOpen, setMobileNavOpen] = useState(false) // Thay vì mobileMenuOpen
 
   // Check first visit và auto-open nav trên mobile
   useEffect(() => {
     const isFirstVisit = !sessionStorage.getItem('hasVisited')
     const isMobile = window.innerWidth <= 768
-
+    
     if (isFirstVisit && isMobile) {
       setMobileNavOpen(true)
       sessionStorage.setItem('hasVisited', 'true')
     }
   }, [])
-
-  // Minimum swipe distance (in px)
-
-  const EDGE_THRESHOLD = 30
-  const minSwipeDistance = 50
-
-  const onTouchStart = (e: TouchEvent) => {
-    const touchX = e.targetTouches[0].clientX
-
-    setTouchEnd(null)
-
-    // Kiểm tra edge swipe
-    if (touchX < EDGE_THRESHOLD) {
-      if (selectedProject) {
-        // Ở ProjectDetail: ngăn browser back, xử lý custom swipe
-        e.preventDefault()
-        setTouchStart(touchX)
-      } else {
-        // Không ở ProjectDetail: không xử lý, để browser back tự nhiên
-        setTouchStart(null)
-        return
-      }
-    } else {
-      setTouchStart(touchX)
-    }
-  }
-
-  const onTouchMove = (e: TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX)
-  }
-
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return
-
-    const distance = touchStart - touchEnd
-    const isLeftSwipe = distance > minSwipeDistance
-    const isRightSwipe = distance < -minSwipeDistance
-
-    // Nếu đang ở ProjectDetail - vuốt từ trái sang phải để back
-    if (selectedProject && isRightSwipe) {
-      setSelectedProject(null)
-    }
-    // Nếu không ở ProjectDetail - vuốt từ trái sang phải -> mở nav
-    else if (!selectedProject && isRightSwipe && !mobileNavOpen) {
-      setMobileNavOpen(true)
-    }
-    // Vuốt từ phải sang trái -> đóng nav
-    else if (isLeftSwipe && mobileNavOpen) {
-      setMobileNavOpen(false)
-    }
-  }
-
-  useEffect(() => {
-    const handleTouchStart = (e: TouchEvent) => onTouchStart(e)
-    const handleTouchMove = (e: TouchEvent) => onTouchMove(e)
-    const handleTouchEnd = () => onTouchEnd()
-
-    document.addEventListener('touchstart', handleTouchStart)
-    document.addEventListener('touchmove', handleTouchMove)
-    document.addEventListener('touchend', handleTouchEnd)
-
-    return () => {
-      document.removeEventListener('touchstart', handleTouchStart)
-      document.removeEventListener('touchmove', handleTouchMove)
-      document.removeEventListener('touchend', handleTouchEnd)
-    }
-  }, [touchStart, touchEnd, mobileNavOpen, selectedProject])
 
   const handleSectionClick = (section: string) => {
     setCurrentSection(section)
@@ -153,7 +72,7 @@ export default function Home() {
           <h2>tôra studio</h2>
         </a>
         <div className="mobile-nav-toggle" onClick={toggleMobileNav}>
-          {mobileNavOpen ? '×' : '☰'}
+          {mobileNavOpen ? '×' : ''}
         </div>
       </div>
 
@@ -174,6 +93,7 @@ export default function Home() {
           <li><h2 onClick={() => handleSectionClick('studio')}>studio</h2></li>
         </ul>
       </div>
+
 
       {/* Menu Block */}
       <div className="menublock">
@@ -206,6 +126,19 @@ export default function Home() {
                   <h2>
                     {currentSection}
                   </h2>
+                  {/* 
+                  <div className="categories">
+                    <ul>
+                      <li><a onClick={() => setSelectedCategory('')}>All</a></li>
+                      {categories[currentSection as keyof typeof categories]?.map((category) => (
+                        <li key={category}>
+                          <a onClick={() => setSelectedCategory(category)}>
+                            {category}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div> */}
                 </>
               )}
             </div>
@@ -249,6 +182,7 @@ export default function Home() {
                         <p>
                           email: torastudiovn@gmail.com
                         </p>
+
                       </div>
 
                       {/* Social icons */}
@@ -303,6 +237,7 @@ export default function Home() {
                 )}
               </div>
             ))}
+
           </div>
         )}
       </div>
