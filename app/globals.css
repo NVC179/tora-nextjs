@@ -903,3 +903,7 @@ h2 {
     font-size: 15px;
   }
 }
+
+body {
+  overscroll-behavior-x: none;
+}
