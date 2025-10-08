@@ -10,6 +10,7 @@ import 'lightgallery/css/lg-thumbnail.css'
 import lgThumbnail from 'lightgallery/plugins/thumbnail'
 import lgZoom from 'lightgallery/plugins/zoom'
 import { Project } from '../types'
+import Image from 'next/image'
 
 interface ProjectDetailProps {
   project: Project
@@ -30,8 +31,8 @@ export default function ProjectDetail({ project }: ProjectDetailProps) {
       name: 'Email',
       icon: (
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="#EA4335" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M22 6l-10 7L2 6" stroke="#EA4335" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="#EA4335" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M22 6l-10 7L2 6" stroke="#EA4335" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       ),
       value: 'torastudiovn@gmail.com',
@@ -43,14 +44,14 @@ export default function ProjectDetail({ project }: ProjectDetailProps) {
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <linearGradient id="instagram-gradient" x1="0%" y1="100%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#FD5949"/>
-              <stop offset="50%" stopColor="#D6249F"/>
-              <stop offset="100%" stopColor="#285AEB"/>
+              <stop offset="0%" stopColor="#FD5949" />
+              <stop offset="50%" stopColor="#D6249F" />
+              <stop offset="100%" stopColor="#285AEB" />
             </linearGradient>
           </defs>
-          <rect x="2" y="2" width="20" height="20" rx="5" stroke="url(#instagram-gradient)" strokeWidth="2"/>
-          <circle cx="12" cy="12" r="4" stroke="url(#instagram-gradient)" strokeWidth="2"/>
-          <circle cx="17.5" cy="6.5" r="1.5" fill="url(#instagram-gradient)"/>
+          <rect x="2" y="2" width="20" height="20" rx="5" stroke="url(#instagram-gradient)" strokeWidth="2" />
+          <circle cx="12" cy="12" r="4" stroke="url(#instagram-gradient)" strokeWidth="2" />
+          <circle cx="17.5" cy="6.5" r="1.5" fill="url(#instagram-gradient)" />
         </svg>
       ),
       value: '@torastudio.vn',
@@ -60,7 +61,7 @@ export default function ProjectDetail({ project }: ProjectDetailProps) {
       name: 'Facebook',
       icon: (
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M24 12C24 5.37258 18.6274 0 12 0C5.37258 0 0 5.37258 0 12C0 17.9895 4.3882 22.954 10.125 23.8542V15.4688H7.07812V12H10.125V9.35625C10.125 6.34875 11.9166 4.6875 14.6576 4.6875C15.9701 4.6875 17.3438 4.92188 17.3438 4.92188V7.875H15.8306C14.34 7.875 13.875 8.80008 13.875 9.75V12H17.2031L16.6711 15.4688H13.875V23.8542C19.6118 22.954 24 17.9895 24 12Z" fill="#1877F2"/>
+          <path d="M24 12C24 5.37258 18.6274 0 12 0C5.37258 0 0 5.37258 0 12C0 17.9895 4.3882 22.954 10.125 23.8542V15.4688H7.07812V12H10.125V9.35625C10.125 6.34875 11.9166 4.6875 14.6576 4.6875C15.9701 4.6875 17.3438 4.92188 17.3438 4.92188V7.875H15.8306C14.34 7.875 13.875 8.80008 13.875 9.75V12H17.2031L16.6711 15.4688H13.875V23.8542C19.6118 22.954 24 17.9895 24 12Z" fill="#1877F2" />
         </svg>
       ),
       value: 'tôra studio',
