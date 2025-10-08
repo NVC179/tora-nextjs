@@ -5,7 +5,6 @@ import { projectsData } from '../data/projects'
 import { Project } from '../types'
 import ProjectDetail from '../components/ProjectDetail'
 import { categories } from '../data/categories'
-import Image from 'next/image'
 
 export default function Home() {
   const [currentSection, setCurrentSection] = useState<string>('')
@@ -21,7 +20,7 @@ export default function Home() {
   useEffect(() => {
     const isFirstVisit = !sessionStorage.getItem('hasVisited')
     const isMobile = window.innerWidth <= 768
-
+    
     if (isFirstVisit && isMobile) {
       setMobileNavOpen(true)
       sessionStorage.setItem('hasVisited', 'true')
@@ -37,7 +36,7 @@ export default function Home() {
     if (target.closest('.lg-outer') || target.closest('.lg-container')) {
       return
     }
-
+    
     setTouchEnd(null)
     setTouchStart(e.targetTouches[0].clientX)
   }
@@ -53,20 +52,29 @@ export default function Home() {
     if (touchStart !== null) {
       const currentTouch = e.targetTouches[0].clientX
       const diff = touchStart - currentTouch
+      
+      // Edge detection: check nếu swipe bắt đầu từ cạnh trái màn hình
+      const edgeThreshold = 50 // 50px từ cạnh trái
+      const isFromLeftEdge = touchStart <= edgeThreshold
 
-      // Nếu đang ở ProjectDetail và swipe từ phải sang trái (để back)
-      // thì ngăn browser gesture back
-      if (selectedProject && diff < 0) {
+      // Nếu đang ở ProjectDetail và swipe từ phải sang trái (back gesture)
+      // HOẶC swipe bắt đầu từ cạnh trái màn hình (browser back gesture)
+      if (selectedProject && (diff < 0 || isFromLeftEdge)) {
+        e.preventDefault()
+      }
+      
+      // Nếu swipe bắt đầu từ cạnh trái và đang có nav open
+      if (isFromLeftEdge && mobileNavOpen) {
         e.preventDefault()
       }
     }
-
+    
     setTouchEnd(e.targetTouches[0].clientX)
   }
 
   const onTouchEnd = () => {
     if (!touchStart || !touchEnd) return
-
+    
     const distance = touchStart - touchEnd
     const isLeftSwipe = distance > minSwipeDistance
     const isRightSwipe = distance < -minSwipeDistance
@@ -83,7 +91,7 @@ export default function Home() {
     else if (isLeftSwipe && mobileNavOpen) {
       setMobileNavOpen(false)
     }
-
+    
     // Reset touch states
     setTouchStart(null)
     setTouchEnd(null)
@@ -298,16 +306,6 @@ export default function Home() {
                     </div>
                     <div className="fifty fifty-right">
                       <div className="img-holder">
-                        <Image
-                          src={item.image}
-                          alt={item.title}
-                          width={400}  // Width cho thumbnail
-                          height={400} // Height cho thumbnail
-                          quality={50} // Giảm quality xuống 75% (mặc định 75)
-                          priority={false} // Lazy load
-                          placeholder="blur" // Thêm blur effect khi load
-                          blurDataURL="data:image/svg+xml;base64,..." // Optional: placeholder blur
-                        />
                         <img src={item.image} alt={item.title} />
                       </div>
                     </div>
