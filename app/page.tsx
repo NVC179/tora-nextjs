@@ -53,20 +53,20 @@ export default function Home() {
       // Ngăn browser back mặc định - luôn xử lý trong app
       isHandlingPopState.current = true
 
-      // Xử lý back logic step-by-step:
-      // project detail -> section list -> home
+      // Logic giống hệt swipe từ trái qua phải:
+      // 1. Project detail -> quay lại section list
+      // 2. Nav đóng -> mở nav
+      // 3. Nav đang mở -> đóng nav
       if (selectedProjectRef.current) {
         // Đang xem project detail -> quay lại danh sách project trong section
         setSelectedProject(null)
-      } else if (currentSectionRef.current) {
-        // Đang ở section list -> quay lại home
-        setCurrentSection('')
-        setSelectedCategory('')
       } else if (mobileNavOpenRef.current) {
-        // Nav đang mở ở home -> đóng nav
+        // Nav đang mở -> đóng nav
         setMobileNavOpen(false)
+      } else {
+        // Nav đang đóng (ở home hoặc section) -> mở nav
+        setMobileNavOpen(true)
       }
-      // Nếu đang ở home và nav đóng -> không làm gì (đã ở trang đầu)
 
       // Luôn push lại state buffer để tránh browser thoát trang
       setTimeout(() => {
