@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { projectsData } from '../data/projects'
 import { Project } from '../types'
 import ProjectDetail from '../components/ProjectDetail'
@@ -12,9 +12,22 @@ export default function Home() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
-  // Swipe gesture states
-  const [touchStart, setTouchStart] = useState<number | null>(null)
-  const [touchEnd, setTouchEnd] = useState<number | null>(null)
+  // Swipe gesture states - dùng ref để tránh stale closure trong event listeners
+  const touchStartRef = useRef<number | null>(null)
+  const touchEndRef = useRef<number | null>(null)
+  
+  // Refs để track state hiện tại trong event listeners
+  const selectedProjectRef = useRef<Project | null>(null)
+  const mobileNavOpenRef = useRef(false)
+  const currentSectionRef = useRef('')
+
+  // Sync refs with state
+  useEffect(() => { selectedProjectRef.current = selectedProject }, [selectedProject])
+  useEffect(() => { mobileNavOpenRef.current = mobileNavOpen }, [mobileNavOpen])
+  useEffect(() => { currentSectionRef.current = currentSection }, [currentSection])
+
+  // Flag để biết popstate đang được xử lý (tránh push state lại)
+  const isHandlingPopState = useRef(false)
 
   // Check first visit và auto-open nav trên mobile
   useEffect(() => {
@@ -27,26 +40,75 @@ export default function Home() {
     }
   }, [])
 
+  // ===== HISTORY API: Ngăn browser back gesture thoát trang =====
+  // Push history state khi điều hướng trong app, lắng nghe popstate để xử lý back
+  useEffect(() => {
+    // Khởi tạo: replace state hiện tại với app state
+    history.replaceState({ appState: 'home' }, '')
+
+    const handlePopState = (e: PopStateEvent) => {
+      isHandlingPopState.current = true
+
+      // Browser back gesture hoặc nút back được kích hoạt
+      // Xử lý back logic giống swipe trong app
+      if (selectedProjectRef.current) {
+        // Đang xem project detail -> quay lại danh sách
+        setSelectedProject(null)
+      } else if (currentSectionRef.current) {
+        // Đang ở section -> quay lại home
+        setCurrentSection('')
+        setSelectedCategory('')
+      } else if (mobileNavOpenRef.current) {
+        // Nav đang mở -> đóng nav
+        setMobileNavOpen(false)
+      }
+
+      // Luôn push lại một state để tránh thoát trang lần sau
+      // Dùng setTimeout để đảm bảo state đã được cập nhật
+      setTimeout(() => {
+        history.pushState({ appState: 'active' }, '')
+        isHandlingPopState.current = false
+      }, 0)
+    }
+
+    // Push một state ban đầu để có history entry cho back gesture
+    history.pushState({ appState: 'active' }, '')
+
+    window.addEventListener('popstate', handlePopState)
+    return () => {
+      window.removeEventListener('popstate', handlePopState)
+    }
+  }, []) // Empty deps - chỉ setup 1 lần, dùng refs để đọc state mới nhất
+
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50
 
-  const onTouchStart = (e: TouchEvent) => {
+  const onTouchStart = useCallback((e: TouchEvent) => {
     // Bỏ qua nếu đang trong lightgallery
     const target = e.target as HTMLElement
     if (target.closest('.lg-outer') || target.closest('.lg-container')) {
       return
     }
     
-    setTouchEnd(null)
-    setTouchStart(e.targetTouches[0].clientX)
-  }
+    const startX = e.targetTouches[0].clientX
+    touchEndRef.current = null
+    touchStartRef.current = startX
 
-  const onTouchMove = (e: TouchEvent) => {
+    // Nếu touch bắt đầu từ cạnh trái, preventDefault ngay để chặn browser gesture
+    const edgeThreshold = 30
+    if (startX <= edgeThreshold) {
+      e.preventDefault()
+    }
+  }, [])
+
+  const onTouchMove = useCallback((e: TouchEvent) => {
     // Bỏ qua nếu đang trong lightgallery
     const target = e.target as HTMLElement
     if (target.closest('.lg-outer') || target.closest('.lg-container')) {
       return
     }
+
+    const touchStart = touchStartRef.current
 
     // Nếu có touchStart, tính toán hướng swipe
     if (touchStart !== null) {
@@ -59,20 +121,22 @@ export default function Home() {
 
       // Nếu đang ở ProjectDetail và swipe từ phải sang trái (back gesture)
       // HOẶC swipe bắt đầu từ cạnh trái màn hình (browser back gesture)
-      if (selectedProject && (diff < 0 || isFromLeftEdge)) {
+      if (selectedProjectRef.current && (diff < 0 || isFromLeftEdge)) {
         e.preventDefault()
       }
       
-      // Nếu swipe bắt đầu từ cạnh trái và đang có nav open
-      if (isFromLeftEdge && mobileNavOpen) {
+      // Nếu swipe bắt đầu từ cạnh trái -> luôn chặn browser gesture
+      if (isFromLeftEdge) {
         e.preventDefault()
       }
     }
     
-    setTouchEnd(e.targetTouches[0].clientX)
-  }
+    touchEndRef.current = e.targetTouches[0].clientX
+  }, [])
 
-  const onTouchEnd = () => {
+  const onTouchEnd = useCallback(() => {
+    const touchStart = touchStartRef.current
+    const touchEnd = touchEndRef.current
     if (!touchStart || !touchEnd) return
     
     const distance = touchStart - touchEnd
@@ -80,39 +144,35 @@ export default function Home() {
     const isRightSwipe = distance < -minSwipeDistance
 
     // Nếu đang ở ProjectDetail - vuốt từ trái sang phải để back
-    if (selectedProject && isRightSwipe) {
+    if (selectedProjectRef.current && isRightSwipe) {
       setSelectedProject(null)
     }
     // Nếu không ở ProjectDetail - vuốt từ trái sang phải -> mở nav
-    else if (!selectedProject && isRightSwipe && !mobileNavOpen) {
+    else if (!selectedProjectRef.current && isRightSwipe && !mobileNavOpenRef.current) {
       setMobileNavOpen(true)
     }
     // Vuốt từ phải sang trái -> đóng nav
-    else if (isLeftSwipe && mobileNavOpen) {
+    else if (isLeftSwipe && mobileNavOpenRef.current) {
       setMobileNavOpen(false)
     }
     
     // Reset touch states
-    setTouchStart(null)
-    setTouchEnd(null)
-  }
+    touchStartRef.current = null
+    touchEndRef.current = null
+  }, [])
 
   useEffect(() => {
-    const handleTouchStart = (e: TouchEvent) => onTouchStart(e)
-    const handleTouchMove = (e: TouchEvent) => onTouchMove(e)
-    const handleTouchEnd = () => onTouchEnd()
-
     // Passive: false để cho phép preventDefault
-    document.addEventListener('touchstart', handleTouchStart, { passive: false })
-    document.addEventListener('touchmove', handleTouchMove, { passive: false })
-    document.addEventListener('touchend', handleTouchEnd)
+    document.addEventListener('touchstart', onTouchStart, { passive: false })
+    document.addEventListener('touchmove', onTouchMove, { passive: false })
+    document.addEventListener('touchend', onTouchEnd)
 
     return () => {
-      document.removeEventListener('touchstart', handleTouchStart)
-      document.removeEventListener('touchmove', handleTouchMove)
-      document.removeEventListener('touchend', handleTouchEnd)
+      document.removeEventListener('touchstart', onTouchStart)
+      document.removeEventListener('touchmove', onTouchMove)
+      document.removeEventListener('touchend', onTouchEnd)
     }
-  }, [touchStart, touchEnd, mobileNavOpen, selectedProject])
+  }, [onTouchStart, onTouchMove, onTouchEnd])
 
   const handleSectionClick = (section: string) => {
     setCurrentSection(section)

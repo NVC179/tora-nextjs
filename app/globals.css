@@ -5,11 +5,19 @@
   box-sizing: border-box;
 }
 
+html {
+  overscroll-behavior-x: none;
+}
+
 body {
   font-family: Arial, sans-serif;
   background: white;
   color: black;
   zoom: 1;
+  overscroll-behavior-x: none;
+  /* Prevent browser from handling horizontal touch gestures (back/forward navigation) */
+  touch-action: pan-y;
+  -ms-touch-action: pan-y;
 }
 
 .desktop {
@@ -903,7 +911,4 @@ h2 {
     font-size: 15px;
   }
 }
-
-body {
-  overscroll-behavior-x: none;
-}
+
