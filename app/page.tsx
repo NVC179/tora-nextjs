@@ -41,7 +41,7 @@ export default function Home() {
   }, [])
 
   // ===== HISTORY API: Ngăn browser back gesture thoát trang =====
-  // Push history state khi điều hướng trong app, lắng nghe popstate để xử lý back
+  // Push nhiều history entries để tạo buffer, ngăn Android back gesture thoát trang
   useEffect(() => {
     // Khởi tạo: replace state hiện tại với app state
     history.replaceState({ appState: 'home' }, '')
@@ -63,15 +63,20 @@ export default function Home() {
         setMobileNavOpen(false)
       }
 
-      // Luôn push lại một state để tránh thoát trang lần sau
+      // Luôn push lại nhiều state để tạo buffer, tránh thoát trang
       // Dùng setTimeout để đảm bảo state đã được cập nhật
       setTimeout(() => {
+        // Push 3 entries buffer để Android back gesture không bao giờ thoát
+        history.pushState({ appState: 'buffer1' }, '')
+        history.pushState({ appState: 'buffer2' }, '')
         history.pushState({ appState: 'active' }, '')
         isHandlingPopState.current = false
-      }, 0)
+      }, 50)
     }
 
-    // Push một state ban đầu để có history entry cho back gesture
+    // Push nhiều state ban đầu để có history entries buffer cho back gesture
+    history.pushState({ appState: 'buffer1' }, '')
+    history.pushState({ appState: 'buffer2' }, '')
     history.pushState({ appState: 'active' }, '')
 
     window.addEventListener('popstate', handlePopState)
@@ -94,9 +99,10 @@ export default function Home() {
     touchEndRef.current = null
     touchStartRef.current = startX
 
-    // Nếu touch bắt đầu từ cạnh trái, preventDefault ngay để chặn browser gesture
-    const edgeThreshold = 30
-    if (startX <= edgeThreshold) {
+    // Nếu touch bắt đầu từ cạnh trái hoặc cạnh phải, preventDefault ngay để chặn browser gesture
+    const edgeThreshold = 40
+    const screenWidth = window.innerWidth
+    if (startX <= edgeThreshold || startX >= screenWidth - edgeThreshold) {
       e.preventDefault()
     }
   }, [])
@@ -115,9 +121,11 @@ export default function Home() {
       const currentTouch = e.targetTouches[0].clientX
       const diff = touchStart - currentTouch
       
-      // Edge detection: check nếu swipe bắt đầu từ cạnh trái màn hình
-      const edgeThreshold = 50 // 50px từ cạnh trái
+      // Edge detection: check nếu swipe bắt đầu từ cạnh trái hoặc phải màn hình
+      const edgeThreshold = 50 // 50px từ cạnh
+      const screenWidth = window.innerWidth
       const isFromLeftEdge = touchStart <= edgeThreshold
+      const isFromRightEdge = touchStart >= screenWidth - edgeThreshold
 
       // Nếu đang ở ProjectDetail và swipe từ phải sang trái (back gesture)
       // HOẶC swipe bắt đầu từ cạnh trái màn hình (browser back gesture)
@@ -125,8 +133,8 @@ export default function Home() {
         e.preventDefault()
       }
       
-      // Nếu swipe bắt đầu từ cạnh trái -> luôn chặn browser gesture
-      if (isFromLeftEdge) {
+      // Nếu swipe bắt đầu từ cạnh trái hoặc phải -> luôn chặn browser gesture
+      if (isFromLeftEdge || isFromRightEdge) {
         e.preventDefault()
       }
     }

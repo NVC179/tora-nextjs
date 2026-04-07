@@ -7,6 +7,7 @@
 
 html {
   overscroll-behavior-x: none;
+  overscroll-behavior: none;
 }
 
 body {
@@ -15,8 +16,9 @@ body {
   color: black;
   zoom: 1;
   overscroll-behavior-x: none;
+  overscroll-behavior: none;
   /* Prevent browser from handling horizontal touch gestures (back/forward navigation) */
-  touch-action: pan-y;
+  touch-action: pan-y pinch-zoom;
   -ms-touch-action: pan-y;
 }
 
@@ -35,7 +37,7 @@ body {
   width: 300px;
   height: 100vh;
   background: white;
-  z-index: 9989;
+  z-index: 999;
   padding: 20px;
   overflow-y: auto;
 }
@@ -124,7 +126,7 @@ h2 {
   height: 60px;
   background: white;
   border-bottom: 1px solid #eee;
-  z-index: 9999;
+  z-index: 1010;
   padding: 0 20px;
   align-items: center;
   justify-content: space-between;
@@ -159,7 +161,7 @@ h2 {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.1);
-  z-index: 9997;
+  z-index: 1005;
   display: block;
 }
 
@@ -171,7 +173,7 @@ h2 {
   right: 0;
   background: white;
   border-bottom: 1px solid #eee;
-  z-index: 9998;
+  z-index: 1008;
   padding: 20px;
   max-height: calc(100vh - 60px);
   overflow-y: auto;
