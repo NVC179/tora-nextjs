@@ -12,6 +12,9 @@ export default function Home() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
+  // Ref để track nếu touch target là nút toggle (tránh block tap)
+  const isTouchOnToggleRef = useRef(false)
+
   // Swipe gesture states - dùng ref để tránh stale closure trong event listeners
   const touchStartRef = useRef<number | null>(null)
   const touchEndRef = useRef<number | null>(null)
@@ -41,32 +44,32 @@ export default function Home() {
   }, [])
 
   // ===== HISTORY API: Ngăn browser back gesture thoát trang =====
-  // Push nhiều history entries để tạo buffer, ngăn Android back gesture thoát trang
+  // Push history entries để tạo buffer, ngăn Android back gesture thoát trang
   useEffect(() => {
     // Khởi tạo: replace state hiện tại với app state
     history.replaceState({ appState: 'home' }, '')
 
     const handlePopState = (e: PopStateEvent) => {
+      // Ngăn browser back mặc định - luôn xử lý trong app
       isHandlingPopState.current = true
 
-      // Browser back gesture hoặc nút back được kích hoạt
-      // Xử lý back logic giống swipe trong app
+      // Xử lý back logic step-by-step:
+      // project detail -> section list -> home
       if (selectedProjectRef.current) {
-        // Đang xem project detail -> quay lại danh sách
+        // Đang xem project detail -> quay lại danh sách project trong section
         setSelectedProject(null)
       } else if (currentSectionRef.current) {
-        // Đang ở section -> quay lại home
+        // Đang ở section list -> quay lại home
         setCurrentSection('')
         setSelectedCategory('')
       } else if (mobileNavOpenRef.current) {
-        // Nav đang mở -> đóng nav
+        // Nav đang mở ở home -> đóng nav
         setMobileNavOpen(false)
       }
+      // Nếu đang ở home và nav đóng -> không làm gì (đã ở trang đầu)
 
-      // Luôn push lại nhiều state để tạo buffer, tránh thoát trang
-      // Dùng setTimeout để đảm bảo state đã được cập nhật
+      // Luôn push lại state buffer để tránh browser thoát trang
       setTimeout(() => {
-        // Push 3 entries buffer để Android back gesture không bao giờ thoát
         history.pushState({ appState: 'buffer1' }, '')
         history.pushState({ appState: 'buffer2' }, '')
         history.pushState({ appState: 'active' }, '')
@@ -74,7 +77,7 @@ export default function Home() {
       }, 50)
     }
 
-    // Push nhiều state ban đầu để có history entries buffer cho back gesture
+    // Push state buffer ban đầu
     history.pushState({ appState: 'buffer1' }, '')
     history.pushState({ appState: 'buffer2' }, '')
     history.pushState({ appState: 'active' }, '')
@@ -95,47 +98,59 @@ export default function Home() {
       return
     }
     
+    // Kiểm tra xem touch có phải trên nút toggle không
+    const isOnToggle = !!(target.closest('.mobile-nav-toggle') || target.closest('.mobile-nav-bar'))
+    isTouchOnToggleRef.current = isOnToggle
+    
     const startX = e.targetTouches[0].clientX
     touchEndRef.current = null
     touchStartRef.current = startX
 
-    // Nếu touch bắt đầu từ cạnh trái hoặc cạnh phải, preventDefault ngay để chặn browser gesture
-    const edgeThreshold = 40
-    const screenWidth = window.innerWidth
-    if (startX <= edgeThreshold || startX >= screenWidth - edgeThreshold) {
-      e.preventDefault()
+    // Chỉ chặn browser edge gesture khi KHÔNG ấn vào toggle button
+    // và KHÔNG ấn vào nav bar
+    if (!isOnToggle) {
+      const edgeThreshold = 30
+      const screenWidth = window.innerWidth
+      // Chỉ chặn cạnh trái (browser back gesture)
+      // Không chặn cạnh phải vì sẽ block toggle button
+      if (startX <= edgeThreshold) {
+        e.preventDefault()
+      }
     }
   }, [])
 
   const onTouchMove = useCallback((e: TouchEvent) => {
-    // Bỏ qua nếu đang trong lightgallery
+    // Bỏ qua nếu đang trong lightgallery hoặc đang touch toggle
     const target = e.target as HTMLElement
     if (target.closest('.lg-outer') || target.closest('.lg-container')) {
+      return
+    }
+    
+    // Nếu đang touch trên toggle, không can thiệp
+    if (isTouchOnToggleRef.current) {
       return
     }
 
     const touchStart = touchStartRef.current
 
-    // Nếu có touchStart, tính toán hướng swipe
     if (touchStart !== null) {
       const currentTouch = e.targetTouches[0].clientX
-      const diff = touchStart - currentTouch
       
-      // Edge detection: check nếu swipe bắt đầu từ cạnh trái hoặc phải màn hình
-      const edgeThreshold = 50 // 50px từ cạnh
-      const screenWidth = window.innerWidth
+      // Edge detection
+      const edgeThreshold = 30
       const isFromLeftEdge = touchStart <= edgeThreshold
-      const isFromRightEdge = touchStart >= screenWidth - edgeThreshold
 
-      // Nếu đang ở ProjectDetail và swipe từ phải sang trái (back gesture)
-      // HOẶC swipe bắt đầu từ cạnh trái màn hình (browser back gesture)
-      if (selectedProjectRef.current && (diff < 0 || isFromLeftEdge)) {
+      // Chặn browser back gesture từ cạnh trái
+      if (isFromLeftEdge) {
         e.preventDefault()
       }
       
-      // Nếu swipe bắt đầu từ cạnh trái hoặc phải -> luôn chặn browser gesture
-      if (isFromLeftEdge || isFromRightEdge) {
-        e.preventDefault()
+      // Nếu đang ở ProjectDetail, chặn horizontal swipe để tránh browser gesture
+      if (selectedProjectRef.current) {
+        const diff = Math.abs(touchStart - currentTouch)
+        if (diff > 10) {
+          e.preventDefault()
+        }
       }
     }
     
@@ -143,6 +158,14 @@ export default function Home() {
   }, [])
 
   const onTouchEnd = useCallback(() => {
+    // Nếu touch trên toggle, bỏ qua swipe logic
+    if (isTouchOnToggleRef.current) {
+      isTouchOnToggleRef.current = false
+      touchStartRef.current = null
+      touchEndRef.current = null
+      return
+    }
+    
     const touchStart = touchStartRef.current
     const touchEnd = touchEndRef.current
     if (!touchStart || !touchEnd) return
@@ -151,17 +174,22 @@ export default function Home() {
     const isLeftSwipe = distance > minSwipeDistance
     const isRightSwipe = distance < -minSwipeDistance
 
-    // Nếu đang ở ProjectDetail - vuốt từ trái sang phải để back
-    if (selectedProjectRef.current && isRightSwipe) {
-      setSelectedProject(null)
-    }
-    // Nếu không ở ProjectDetail - vuốt từ trái sang phải -> mở nav
-    else if (!selectedProjectRef.current && isRightSwipe && !mobileNavOpenRef.current) {
-      setMobileNavOpen(true)
-    }
-    // Vuốt từ phải sang trái -> đóng nav
-    else if (isLeftSwipe && mobileNavOpenRef.current) {
-      setMobileNavOpen(false)
+    // Chỉ xử lý swipe trên mobile
+    const isMobile = window.innerWidth <= 768
+
+    if (isMobile) {
+      // Nếu đang ở ProjectDetail - vuốt từ trái sang phải để back
+      if (selectedProjectRef.current && isRightSwipe) {
+        setSelectedProject(null)
+      }
+      // Nếu không ở ProjectDetail - vuốt từ trái sang phải -> mở nav
+      else if (!selectedProjectRef.current && isRightSwipe && !mobileNavOpenRef.current) {
+        setMobileNavOpen(true)
+      }
+      // Vuốt từ phải sang trái -> đóng nav
+      else if (isLeftSwipe && mobileNavOpenRef.current) {
+        setMobileNavOpen(false)
+      }
     }
     
     // Reset touch states
@@ -227,12 +255,17 @@ export default function Home() {
     <div className="desktop">
       {/* Mobile Navigation Bar */}
       <div className="mobile-nav-bar">
-        <a href="#" onClick={toggleMobileNav} className="mobile-nav-logo">
+        <a href="#" onClick={(e) => { e.preventDefault(); toggleMobileNav(); }} className="mobile-nav-logo">
           <h2>tôra studio</h2>
         </a>
-        <div className="mobile-nav-toggle" onClick={toggleMobileNav}>
+        <button 
+          type="button"
+          className="mobile-nav-toggle" 
+          onClick={(e) => { e.stopPropagation(); toggleMobileNav(); }}
+          aria-label={mobileNavOpen ? 'Đóng menu' : 'Mở menu'}
+        >
           {mobileNavOpen ? '×' : '☰'}
-        </div>
+        </button>
       </div>
 
       {/* Mobile Navigation Overlay - Click để đóng nav */}

@@ -130,6 +130,8 @@ h2 {
   padding: 0 20px;
   align-items: center;
   justify-content: space-between;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .mobile-nav-logo {
@@ -141,13 +143,26 @@ h2 {
 }
 
 .mobile-nav-toggle {
-  font-size: 20px;
+  font-size: 24px;
   color: #999;
   cursor: pointer;
-  padding: 10px;
+  padding: 12px;
   transition: color 0.3s ease;
-  min-width: 30px;
+  min-width: 44px;
+  min-height: 44px;
   text-align: center;
+  /* Reset button styles */
+  background: none;
+  border: none;
+  outline: none;
+  /* Ensure tappable on mobile */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  z-index: 1012;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mobile-nav-toggle:hover {
