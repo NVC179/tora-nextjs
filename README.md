@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# tôra studio
 
-## Getting Started
+Next.js App Router website. The active application lives in `app/` (the legacy `src/app/` starter is unused).
 
-First, run the development server:
+## Development
 
-```bash
+```sh
+npm ci
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Validation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```sh
+npm run lint
+npm run build
+npm run test:e2e
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The browser tests use installed Google Chrome. Run them after building; Playwright starts the production server automatically, or reuses an existing local server on port 3000. Tests cover mobile and desktop navigation, browser back/forward, scroll restoration, direct URLs, gallery loading, menu gestures and responsive overflow.
 
-## Learn More
+## Navigation
 
-To learn more about Next.js, take a look at the following resources:
+- `/`: mobile landing menu with works, journal, shop and studio.
+- `/works`, `/journal`, `/shop`, `/studio`: section lists.
+- `/<section>/<project id>`: project details, generated from `data/projects.ts`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Navigation uses Next.js links and real browser history. Native edge swipes, Android back and browser forward follow the same history. Opening a detail URL directly and refreshing keep the selected project. The visible back link uses browser back when entered from its section; direct visits fall back to the section link.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The site does not cancel document touch events. Only the open mobile menu handles a short horizontal swipe to dismiss itself; vertical scrolling and gallery gestures remain available. Confirm native OS edge gestures on a physical iPhone and Android device before release, since browser automation cannot reproduce those OS gestures.
 
-## Deploy on Vercel
+## Images
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Cards and gallery previews use `next/image` with responsive sizes, reserved space and lazy loading. The first visible images receive priority. LightGallery and its plugins load when an image is opened; its large images and thumbnails also use optimized URLs. Original assets remain in `public/images/`. Section data stays in server components, and all existing section/detail routes are prerendered at build time.

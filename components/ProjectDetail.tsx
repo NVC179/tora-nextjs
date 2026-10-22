@@ -1,14 +1,10 @@
 'use client'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
-const LightGalleryComponent = dynamic(() => import('lightgallery/react'), {
+const GalleryLightbox = dynamic(() => import('./GalleryLightbox'), {
   ssr: false,
+  loading: () => <p role="status">Đang mở ảnh…</p>,
 })
-import 'lightgallery/css/lightgallery.css'
-import 'lightgallery/css/lg-zoom.css'
-import 'lightgallery/css/lg-thumbnail.css'
-import lgThumbnail from 'lightgallery/plugins/thumbnail'
-import lgZoom from 'lightgallery/plugins/zoom'
 import { Project } from '../types'
 import Image from 'next/image'
 
@@ -17,14 +13,17 @@ interface ProjectDetailProps {
 }
 
 export default function ProjectDetail({ project }: ProjectDetailProps) {
-  const lightboxRef = useRef<any>(null)
+  const [activeImage, setActiveImage] = useState<number | null>(null)
   const [showContactModal, setShowContactModal] = useState(false)
+  const contactRef = useRef<HTMLDialogElement>(null)
 
-  const openLightbox = (index: number) => {
-    if (lightboxRef.current) {
-      lightboxRef.current.openGallery(index)
-    }
-  }
+  useEffect(() => {
+    if (!showContactModal) return
+    contactRef.current?.showModal()
+    const originalOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = originalOverflow }
+  }, [showContactModal])
 
   const contactMethods = [
     {
@@ -74,36 +73,27 @@ export default function ProjectDetail({ project }: ProjectDetailProps) {
       {/* Gallery Grid */}
       <div className="gallery-section">
         {/* Lightbox Component */}
-        <LightGalleryComponent
-          onInit={(ref) => {
-            if (ref) {
-              lightboxRef.current = ref.instance
-            }
-          }}
-          plugins={[lgThumbnail, lgZoom]}
-          dynamic
-          dynamicEl={(project.gallery ?? []).map((src) => ({
-            src,
-            thumb: src,
-            subHtml: `<h4>${project.title}</h4>`
-          }))}
-          closable={true}
-          download={false}
-        />
+        {activeImage !== null && <GalleryLightbox images={project.gallery ?? []}
+          index={activeImage} onClose={() => setActiveImage(null)} />}
         {/* Image Grid - 3x3 desktop, 2x2 mobile */}
         <div className="image-grid">
           {project.gallery?.map((imageSrc, index) => (
-            <div
+            <button
+              type="button"
               key={index}
               className="gallery-item"
-              onClick={() => openLightbox(index)}
+              aria-label={`Xem ảnh ${index + 1}: ${project.title}`}
+              onClick={() => setActiveImage(index)}
             >
-              <img
+              <Image
                 src={imageSrc}
                 alt={`${project.title} - Image ${index + 1}`}
                 className="gallery-image"
+                fill
+                sizes="(max-width: 768px) 45vw, (max-width: 1024px) 30vw, 300px"
+                priority={index < 2}
               />
-            </div>
+            </button>
           ))}
         </div>
       </div>
@@ -134,15 +124,18 @@ export default function ProjectDetail({ project }: ProjectDetailProps) {
 
       {/* Contact Modal */}
       {showContactModal && (
-        <div className="modal-overlay" onClick={() => setShowContactModal(false)}>
+        <dialog ref={contactRef} className="contact-dialog" aria-labelledby="contact-title"
+          onCancel={() => setShowContactModal(false)} onClose={() => setShowContactModal(false)}
+          onClick={event => { if (event.target === event.currentTarget) setShowContactModal(false) }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <button
               className="modal-close"
+              aria-label="Đóng liên hệ"
               onClick={() => setShowContactModal(false)}
             >
               ×
             </button>
-            <h3>Liên hệ mua hàng</h3>
+            <h3 id="contact-title">Liên hệ mua hàng</h3>
             <p className="modal-subtitle">Chọn cách thức liên hệ bạn muốn</p>
             <div className="contact-methods">
               {contactMethods.map((method, index) => (
@@ -162,7 +155,7 @@ export default function ProjectDetail({ project }: ProjectDetailProps) {
               ))}
             </div>
           </div>
-        </div>
+        </dialog>
       )}
     </div>
   )

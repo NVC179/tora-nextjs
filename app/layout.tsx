@@ -1,5 +1,6 @@
 import './globals.css'
 import type { Metadata } from 'next'
+import SiteShell from '../components/SiteShell'
 
 export const metadata: Metadata = {
   title: 'tôra studio',
@@ -13,7 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="vi">
-      <body>{children}</body>
+      <body><SiteShell>{children}</SiteShell></body>
     </html>
   )
 }
