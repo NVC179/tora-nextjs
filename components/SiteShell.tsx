@@ -21,15 +21,15 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setCanGoBack(previousPath.current === `/${section}`)
     previousPath.current = pathname
-    setMenuPath(null)
+    setMenuPath(pathname === '/' && window.matchMedia('(max-width: 768px)').matches ? pathname : null)
   }, [pathname, section])
 
   useEffect(() => {
     const desktop = window.matchMedia('(min-width: 769px)')
-    const closeOnDesktop = () => { if (desktop.matches) setMenuPath(null) }
-    desktop.addEventListener('change', closeOnDesktop)
-    return () => desktop.removeEventListener('change', closeOnDesktop)
-  }, [])
+    const updateMenu = () => setMenuPath(!desktop.matches && pathname === '/' ? pathname : null)
+    desktop.addEventListener('change', updateMenu)
+    return () => desktop.removeEventListener('change', updateMenu)
+  }, [pathname])
 
   useEffect(() => {
     if (!menuOpen) return

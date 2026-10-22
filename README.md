@@ -21,7 +21,7 @@ The browser tests use installed Google Chrome. Run them after building; Playwrig
 
 ## Navigation
 
-- `/`: mobile landing menu with works, journal, shop and studio.
+- `/`: automatically expands the existing mobile navigation with works, journal, shop and studio.
 - `/works`, `/journal`, `/shop`, `/studio`: section lists.
 - `/<section>/<project id>`: project details, generated from `data/projects.ts`.
 

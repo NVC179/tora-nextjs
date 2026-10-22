@@ -14,7 +14,6 @@ export default async function SectionPage({ params }: { params: Promise<{ sectio
 
   return (
     <section aria-label={section}>
-      <h2 className="section-title">{section}</h2>
       {projectsData[section].map((item, index) => section === 'studio' ? (
         <article key={item.id} className="studio-layout">
           <div className="studio-image-large"><Image src={item.image} alt={item.title || 'tôra studio'}

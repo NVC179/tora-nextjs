@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 
 test('home exposes all sections on every visit', async ({ page, isMobile }) => {
   await page.goto('/')
-  const navigation = page.getByRole('navigation', { name: isMobile ? 'Khám phá tôra studio' : 'Menu chính', exact: true })
+  const navigation = page.getByRole('navigation', { name: isMobile ? 'Menu mobile' : 'Menu chính', exact: true })
   for (const section of ['works', 'journal', 'shop', 'studio']) {
     await expect(navigation.getByRole('link', { name: section, exact: true })).toBeVisible()
   }
@@ -17,7 +17,7 @@ test('home exposes all sections on every visit', async ({ page, isMobile }) => {
 
 test('browser back and forward follow home, list, detail without extra history', async ({ page, isMobile }) => {
   await page.goto('/')
-  const navigation = page.getByRole('navigation', { name: isMobile ? 'Khám phá tôra studio' : 'Menu chính', exact: true })
+  const navigation = page.getByRole('navigation', { name: isMobile ? 'Menu mobile' : 'Menu chính', exact: true })
   await navigation.getByRole('link', { name: 'works', exact: true }).click()
   await expect(page).toHaveURL('/works')
   const project = page.locator('.project-item').last()
