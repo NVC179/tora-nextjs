@@ -9,6 +9,8 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
   const [menuPath, setMenuPath] = useState<string | null>(null)
+  const [desktopMenuPath, setDesktopMenuPath] = useState<string | null>(null)
+  const desktopToggleRef = useRef<HTMLButtonElement>(null)
   const menuOpen = menuPath === pathname
   const toggleRef = useRef<HTMLButtonElement>(null)
   const menuRef = useRef<HTMLElement>(null)
@@ -17,10 +19,12 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   const touchStart = useRef<{ x: number; y: number; time: number } | null>(null)
   const [, section, projectId] = pathname.split('/')
   const currentSection = isSection(section ?? '') ? section : ''
+  const desktopMenuOpen = !projectId || desktopMenuPath === pathname
 
   useEffect(() => {
     setCanGoBack(previousPath.current === `/${section}`)
     previousPath.current = pathname
+    setDesktopMenuPath(null)
     setMenuPath(pathname === '/' && window.matchMedia('(max-width: 768px)').matches ? pathname : null)
   }, [pathname, section])
 
@@ -105,11 +109,24 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
             onClick={() => setMenuPath(null)}>{item}</Link></li>)}
         </ul>
       </nav>
-      <aside className="menublock" inert={menuOpen}>
-        <h1><Link href="/">tôra studio</Link></h1>
-        <nav className="nav" aria-label="Menu chính"><ul>
+      <aside className={`menublock${projectId ? ' menublock-detail' : ''}`} inert={menuOpen}
+        onKeyDown={event => {
+          if (projectId && event.key === 'Escape') {
+            setDesktopMenuPath(null)
+            desktopToggleRef.current?.focus()
+          }
+        }}>
+        <h1>{projectId ? (
+          <button ref={desktopToggleRef} type="button" className="desktop-nav-toggle"
+            aria-expanded={desktopMenuOpen} aria-controls="desktop-navigation"
+            onClick={() => setDesktopMenuPath(desktopMenuOpen ? null : pathname)}>
+            tôra studio
+          </button>
+        ) : <Link href="/">tôra studio</Link>}</h1>
+        <nav id="desktop-navigation" className="nav" aria-label="Menu chính" hidden={!desktopMenuOpen}><ul>
           {sections.map(item => <li key={item}><Link href={`/${item}`}
-            aria-current={currentSection === item ? 'page' : undefined}><h2>{item}</h2></Link></li>)}
+            aria-current={currentSection === item ? 'page' : undefined}
+            onClick={() => setDesktopMenuPath(null)}><h2>{item}</h2></Link></li>)}
         </ul></nav>
         {backLink}
       </aside>

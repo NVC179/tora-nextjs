@@ -44,6 +44,21 @@ body {
   color: black;
 }
 
+.desktop-nav-toggle {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menublock-detail {
+  height: auto;
+  max-height: 100vh;
+}
+
 /* Navigation Links */
 .nav ul,
 .categories ul {
@@ -947,6 +962,29 @@ a:focus-visible, button:focus-visible {
   overflow-y: auto;
 }
 .contact-dialog::backdrop { background: rgb(0 0 0 / 60%); }
+@media (min-width: 1025px) {
+  .content:has(.project-detail) {
+    position: relative;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: 60vw;
+    max-width: 800px;
+    padding: 40px 30px;
+  }
+}
+@media (min-width: 1200px) {
+  .content:has(.project-detail) {
+    width: 55vw;
+    max-width: 850px;
+  }
+}
+@media (min-width: 1400px) {
+  .content:has(.project-detail) {
+    width: 50vw;
+    max-width: 900px;
+  }
+}
 @media (max-width: 768px) {
   .desktop { min-height: 100dvh; }
   .mobile-nav-bar {
